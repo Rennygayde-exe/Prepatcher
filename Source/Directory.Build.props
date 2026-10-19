@@ -1,7 +1,17 @@
 <Project>
   <PropertyGroup>
-    <RimWorldDir Condition="'$(RimWorldDir)'==''">$(HOME)/.local/share/Steam/steamapps/common/RimWorld</RimWorldDir>
-    <WorkshopDir Condition="'$(WorkshopDir)'==''">$(HOME)/.local/share/Steam/steamapps/workshop/content/294100</WorkshopDir>
-    <HarmonyDll Condition="'$(HarmonyDll)'==''">$(WorkshopDir)/2009463077/1.7/Assemblies/0Harmony.dll</HarmonyDll>
+    <SteamDir Condition="'$(SteamDir)' == '' and '$(OS)' == 'Windows_NT'">C:\Program Files (x86)\Steam</SteamDir>
+    <SteamDir Condition="'$(SteamDir)' == ''">$(HOME)/.local/share/Steam</SteamDir>
+    <RimWorldDir Condition="'$(RimWorldDir)' == ''">$(SteamDir)/steamapps/common/RimWorld</RimWorldDir>
+    <HarmonyDll Condition="'$(HarmonyDll)' == ''">$(SteamDir)/steamapps/workshop/content/294100/2009463077/1.7/Assemblies/0Harmony.dll</HarmonyDll>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' != ''">
+    <IntermediateOutputPath>obj/$(Configuration)/$(TargetFramework)/</IntermediateOutputPath>
+    <OutputPath>bin/$(Configuration)/$(TargetFramework)/</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <GenerateDependencyFile>false</GenerateDependencyFile>
   </PropertyGroup>
 </Project>

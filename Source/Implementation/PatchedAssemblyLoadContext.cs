@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if NET
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -34,3 +35,4 @@ internal class PatchedAssemblyLoadContext : AssemblyLoadContext
             : null;
     }
 }
+#endif

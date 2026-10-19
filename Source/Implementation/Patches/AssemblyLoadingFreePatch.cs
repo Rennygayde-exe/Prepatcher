@@ -22,6 +22,7 @@ public static class AssemblyLoadingFreePatch
                 inst.Operand = module.ImportReference(typeof(AssemblyLoadingFreePatch).GetMethod(nameof(LoadFrom)));
     }
 
+#if NET
     private static bool ReferencesGameAssembly(byte[] rawAssembly)
     {
         try
@@ -35,29 +36,35 @@ public static class AssemblyLoadingFreePatch
             return false;
         }
     }
+#endif
 
     public static Assembly LoadFrom(string filePath)
     {
         var asmName = AssemblyName.GetAssemblyName(filePath);
 
+#if NET
         if (DataStore.PatchedAssemblies.TryGetValue(asmName.Name!, out var patched))
             return patched;
+#endif
 
         var asmWithName = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == asmName.Name);
 
-        var rawAssembly = File.ReadAllBytes(filePath);
-
-        if (ReferencesGameAssembly(rawAssembly))
+#if NET
+        var raw = File.ReadAllBytes(filePath);
+        if (ReferencesGameAssembly(raw))
         {
             Lg.Verbose($"Loading {asmName.Name} into the patched context");
-            var intoContext = PatchedAssemblyLoadContext.Instance.LoadPatched(rawAssembly);
+            var intoContext = PatchedAssemblyLoadContext.Instance.LoadPatched(raw);
             DataStore.PatchedAssemblies[asmName.Name!] = intoContext;
             return intoContext;
         }
+#endif
 
         if (asmWithName != null)
             return asmWithName;
+
+        var rawAssembly = File.ReadAllBytes(filePath);
 
         var fileInfo = new FileInfo(Path.Combine(Path.GetDirectoryName(filePath)!, Path.GetFileNameWithoutExtension(filePath)) + ".pdb");
         if (fileInfo.Exists)

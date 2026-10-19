@@ -32,7 +32,9 @@ internal class PrepatcherMod : Mod
                 return null;
             };
 
+#if NET
             TypeByNamePatch.Apply();
+#endif
 
             Lg.Info($"Restarted with the patched assembly, going silent.");
             return;

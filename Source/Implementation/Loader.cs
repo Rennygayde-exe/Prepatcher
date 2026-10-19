@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+#if NET
 using System.Runtime.Loader;
+#endif
 using DataAssembly;
 using HarmonyLib;
 using LudeonTK;
@@ -99,19 +101,26 @@ internal static class Loader
                 Application.logMessageReceivedThreaded -= Log.Notify_MessageReceivedThreadedInternal;
                 UnregisterWorkshopCallbacks();
                 ClearAssemblyResolve();
+#if NET
                 ClearPendingDeferredMaterials();
+#endif
             }
         );
 
+#if NET
         EngineRebindPatch.Apply(new Harmony("prepatcher.enginerebind"), origAsm, newAsm);
+#endif
     }
 
+#if NET
     private static readonly HashSet<string> SharedAssemblies = new() { "0Harmony" };
+#endif
 
     private static void LoadAssembly(ModifiableAssembly asm)
     {
         Lg.Verbose($"Loading assembly: {asm}");
 
+#if NET
         var asmName = asm.AsmDefinition.Name.Name;
         Assembly loadedAssembly;
 
@@ -126,6 +135,9 @@ internal static class Loader
             loadedAssembly = PatchedAssemblyLoadContext.Instance.LoadPatched(asm.Bytes!);
         }
         DataStore.PatchedAssemblies[loadedAssembly.GetName().Name!] = loadedAssembly;
+#else
+        var loadedAssembly = Assembly.Load(asm.Bytes);
+#endif
 
         if (loadedAssembly.GetName().Name == AssemblyCollector.AssemblyCSharp)
         {
@@ -160,6 +172,7 @@ internal static class Loader
         Workshop.installedCallback?.Unregister();
     }
 
+#if NET
     private static void ClearPendingDeferredMaterials()
     {
         var pendingField = AccessTools.Field(typeof(Material), "PendingDeferredMaterials");
@@ -173,6 +186,7 @@ internal static class Loader
         lock (resolveLock)
             pending.Clear();
     }
+#endif
 
     private static void ClearAssemblyResolve()
     {
@@ -181,11 +195,13 @@ internal static class Loader
         var asmResolve = AccessTools.Field(typeof(AppDomain), "AssemblyResolve");
         object? resolveTarget = AppDomain.CurrentDomain;
 
+#if NET
         if (asmResolve == null)
         {
             asmResolve = AccessTools.Field(typeof(AssemblyLoadContext), "AssemblyResolve");
             resolveTarget = null;
         }
+#endif
 
         if (asmResolve == null)
         {

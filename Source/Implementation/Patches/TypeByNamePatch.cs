@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -13,8 +14,6 @@ internal static class TypeByNamePatch
     internal static void Apply()
     {
         var harmony = new Harmony("prepatcher.typebyname");
-
-        PatchFailureTolerancePatch.Apply(harmony);
 
         var target = AccessTools.Method(typeof(AccessTools), nameof(AccessTools.TypeByName));
         if (target == null)
@@ -82,3 +81,4 @@ internal static class TypeByNamePatch
         __result = patched.GetType(__result.FullName) ?? __result;
     }
 }
+#endif
